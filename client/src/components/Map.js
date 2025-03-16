@@ -1,21 +1,32 @@
-import React, { useState } from "react";
-import { GoogleMap, LoadScript, Polygon } from "@react-google-maps/api";
+import React, { useEffect, useRef } from "react";
 
-const MapComponent = ({ onSelect }) => {
-    const [path, setPath] = useState([]);
+function Map({ onCoordinatesChange }) {
+  const mapRef = useRef(null);
 
-    const handleClick = (e) => {
-        setPath([...path, { lat: e.latLng.lat(), lng: e.latLng.lng() }]);
-        onSelect(path);
-    };
+  useEffect(() => {
+    const map = new window.google.maps.Map(mapRef.current, {
+      center: { lat: 37.7749, lng: -122.4194 },
+      zoom: 15,
+      mapTypeId: "satellite",
+    });
 
-    return (
-        <LoadScript googleMapsApiKey="YOUR_GOOGLE_MAPS_API_KEY">
-            <GoogleMap onClick={handleClick} center={{ lat: 37.7749, lng: -122.4194 }} zoom={10}>
-                <Polygon paths={path} options={{ fillColor: "blue", fillOpacity: 0.5 }} />
-            </GoogleMap>
-        </LoadScript>
-    );
-};
+    const drawingManager = new window.google.maps.drawing.DrawingManager({
+      drawingMode: window.google.maps.drawing.OverlayType.POLYGON,
+      drawingControl: true,
+      polygonOptions: { editable: true },
+    });
+    drawingManager.setMap(map);
 
-export default MapComponent;
+    window.google.maps.event.addListener(drawingManager, "polygoncomplete", (polygon) => {
+      const coordinates = polygon.getPath().getArray().map((latLng) => ({
+        lat: latLng.lat(),
+        lng: latLng.lng(),
+      }));
+      onCoordinatesChange(coordinates);
+    });
+  }, [onCoordinatesChange]);
+
+  return <div ref={mapRef} style={{ height: "400px", width: "100%" }} />;
+}
+
+export default Map;

@@ -1,17 +1,19 @@
-import React from "react";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import React, { useState } from "react";
 import LandForm from "./components/LandForm";
 import GovDashboard from "./components/GovDashboard";
 
 function App() {
-    return (
-        <Router>
-            <Routes>
-                <Route path="/" element={<LandForm />} />
-                <Route path="/dashboard" element={<GovDashboard />} />
-            </Routes>
-        </Router>
-    );
+  const [userRole, setUserRole] = useState("citizen"); // Simulate role, replace with auth logic
+
+  return (
+    <div className="app">
+      <h1>Land Registration System</h1>
+      {userRole === "citizen" ? <LandForm /> : <GovDashboard />}
+      <button onClick={() => setUserRole(userRole === "citizen" ? "government" : "citizen")}>
+        Switch Role (Demo)
+      </button>
+    </div>
+  );
 }
 
 export default App;
