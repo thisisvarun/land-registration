@@ -1,5 +1,5 @@
 const express = require("express");
-const { create } = require("ipfs-http-client");
+const { create } = require("ipfs-http-client/cjs");
 const jwt = require("jsonwebtoken");
 const Land = require("../models/Land");
 const router = express.Router();
