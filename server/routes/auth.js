@@ -5,10 +5,10 @@ const User = require("../models/User");
 const router = express.Router();
 
 router.post("/register", async (req, res) => {
-  const { username, password, email } = req.body;
+  const { username, password, email, role } = req.body;
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user = new User({ username, password: hashedPassword, email });
+    const user = new User({ username, password: hashedPassword, email, role });
     await user.save();
     res.status(201).json({ message: "User registered" });
   } catch (error) {
@@ -24,7 +24,7 @@ router.post("/login", async (req, res) => {
       return res.status(401).json({ error: "Invalid credentials" });
     }
     const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET);
-    res.json({ token });
+    res.json({ token, role: user.role });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

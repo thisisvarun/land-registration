@@ -1,25 +1,26 @@
 .app {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
-  }
-  
-  .land-form, .gov-dashboard {
-    margin-top: 20px;
-  }
-  
-  input, button {
-    margin: 10px 0;
-    padding: 8px;
-  }
-  
-  button {
-    cursor: pointer;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-  }
-  
-  button:hover {
-    background-color: #45a049;
-  }
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.login, .user-dashboard, .gov-dashboard, .land-form {
+  margin-top: 20px;
+}
+
+input, button {
+  margin: 10px 0;
+  padding: 8px;
+  display: block;
+}
+
+button {
+  cursor: pointer;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+}
+
+button:hover {
+  background-color: #45a049;
+}
