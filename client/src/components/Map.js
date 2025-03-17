@@ -1,30 +1,48 @@
 import React, { useEffect, useRef } from "react";
 
-function Map({ onCoordinatesChange }) {
+function Map({ onCoordinatesChange, coordinates }) {
   const mapRef = useRef(null);
+  const mapInstanceRef = useRef(null);
+  const polygonRef = useRef(null);
 
   useEffect(() => {
-    const map = new window.google.maps.Map(mapRef.current, {
-      center: { lat: 37.7749, lng: -122.4194 },
-      zoom: 15,
-      mapTypeId: "satellite",
-    });
+    // Initialize map only if not already initialized
+    if (!mapInstanceRef.current) {
+      mapInstanceRef.current = window.L.map(mapRef.current).setView([37.7749, -122.4194], 15);
 
-    const drawingManager = new window.google.maps.drawing.DrawingManager({
-      drawingMode: window.google.maps.drawing.OverlayType.POLYGON,
-      drawingControl: true,
-      polygonOptions: { editable: true },
-    });
-    drawingManager.setMap(map);
+      // Add OpenStreetMap tiles (default)
+      window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors",
+      }).addTo(mapInstanceRef.current);
 
-    window.google.maps.event.addListener(drawingManager, "polygoncomplete", (polygon) => {
-      const coordinates = polygon.getPath().getArray().map((latLng) => ({
-        lat: latLng.lat(),
-        lng: latLng.lng(),
-      }));
-      onCoordinatesChange(coordinates);
-    });
-  }, [onCoordinatesChange]);
+      // Initialize an editable polygon
+      polygonRef.current = window.L.polygon([], { color: "red", weight: 2 }).addTo(mapInstanceRef.current);
+
+      // Enable drawing by clicking on the map
+      mapInstanceRef.current.on("click", (e) => {
+        polygonRef.current.addLatLng(e.latlng);
+        const coords = polygonRef.current.getLatLngs()[0].map((latlng) => ({
+          lat: latlng.lat,
+          lng: latlng.lng,
+        }));
+        onCoordinatesChange(coords);
+      });
+    }
+
+    // If coordinates are provided (e.g., from GovDashboard), display them
+    if (coordinates && coordinates.length > 0) {
+      polygonRef.current.setLatLngs(coordinates);
+      mapInstanceRef.current.fitBounds(polygonRef.current.getBounds());
+    }
+
+    // Cleanup on unmount
+    return () => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
+      }
+    };
+  }, [onCoordinatesChange, coordinates]);
 
   return <div ref={mapRef} style={{ height: "400px", width: "100%" }} />;
 }

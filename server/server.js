@@ -10,9 +10,18 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+// Connect to MongoDB Atlas using Mongoose
+mongoose.connect(process.env.MONGO_URI, {
+  serverApi: {
+    version: "1", // Matches ServerApiVersion.v1
+    strict: true,
+    deprecationErrors: true,
+  },
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
   .then(() => console.log("MongoDB connected"))
-  .catch((err) => console.error(err));
+  .catch((err) => console.error("MongoDB connection error:", err));
 
 app.use("/api/auth", authRoutes);
 app.use("/api/land", landRoutes);
