@@ -9,21 +9,36 @@ const ipfs = create({
   protocol: process.env.IPFS_PROTOCOL,
 });
 
+const jwt = require("jsonwebtoken");
+const authMiddleware = (req, res, next) => {
+  const token = req.headers.authorization?.split(" ")[1];
+  if (!token) return res.status(401).json({ error: "No token provided" });
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded;
+    next();
+  } catch (error) {
+    res.status(401).json({ error: "Invalid token" });
+  }
+};
+
+
 // Middleware to check role (simplified for demo)
 const checkRole = (role) => (req, res, next) => {
-  const userRole = "government"; // Replace with actual JWT decoding
+  const userRole = req.user.role; // From decoded JWT
   if (userRole !== role) return res.status(403).json({ error: "Forbidden" });
   next();
 };
 
-router.post("/submit", async (req, res) => {
+router.post("/submit", authMiddleware, async (req, res) => {
   const { address, coordinates } = req.body;
   try {
     const land = new Land({
-      ownerId: "mockUserId", // Replace with req.user.id from JWT
+      ownerId: req.user.id, // Use authenticated user ID
       address,
       coordinates,
     });
+    
     await land.save();
     res.status(201).json({ message: "Land submitted" });
   } catch (error) {
